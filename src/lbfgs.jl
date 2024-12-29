@@ -56,7 +56,7 @@ function optimize(fg, x, alg::LBFGS;
         _xlast[] = x # store result in global variables to debug linesearch failures
         _glast[] = g
         _dlast[] = η
-        x, f, g, ξ, α, nfg = alg.linesearch(fg, x, η, (f, g);
+        x, f, g, ξ, α, nfg, ls_succ = alg.linesearch(fg, x, η, (f, g);
             initialguess = one(f), acceptfirst = alg.acceptfirst,
             # for some reason, line search seems to converge to solution alpha = 2 in most cases if acceptfirst = false. If acceptfirst = true, the initial value of alpha can immediately be accepted. This typically leads to a more erratic convergence of normgrad, but to less function evaluations in the end.
             retract = retract, inner = inner)
@@ -69,7 +69,7 @@ function optimize(fg, x, alg::LBFGS;
         push!(normgradhistory, normgrad)
 
         # check stopping criteria and print info
-        if normgrad <= alg.gradtol || numiter >= alg.maxiter
+        if normgrad <= alg.gradtol || numiter >= alg.maxiter || !ls_succ
             break
         end
         verbosity >= 2 &&

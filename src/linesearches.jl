@@ -120,7 +120,7 @@ function bisect(iter::HagerZhangLineSearchIterator, a::LineSearchPoint, b::LineS
         if checkexactwolfe(c, p₀, c₁, c₂) || checkapproxwolfe(c, p₀, c₁, c₂, ϵ)
             return c, c, numfg
         end
-        if c.dϕ >= 0 # U3.a
+        if c.dϕ >= 0 || numfg >10 # U3.a
             return a, c, numfg
         elseif c.ϕ <= fmax # U3.b
             a = c
@@ -265,11 +265,13 @@ function (ls::HagerZhangLineSearch)(fg, x₀, η₀, fg₀ = fg(x₀);
         if done
             ls.verbosity >= 1 &&
                 @info @sprintf("Linesearch converged after %2d iterations: α = %.2e, dϕ = %.2e, ϕ - ϕ₀ = %.2e", k, α, dϕ, f - f₀)
-            return x, f, g, ξ, α, numfg
+            ls_succ = true
+            return x, f, g, ξ, α, numfg, ls_succ
         elseif k == ls.maxiter
             ls.verbosity >= 1 &&
                 @info @sprintf("Linesearch not converged after %2d iterations: α = %.2e, dϕ = %.2e, ϕ - ϕ₀ = %.2e", k, α, dϕ, f - f₀)
-            return x, f, g, ξ, α, numfg
+                ls_succ = false
+            return x, f, g, ξ, α, numfg,ls_succ
         else
             ls.verbosity >= 2 &&
                 @info @sprintf("Linesearch step %d: [a,b] = [%.2e, %.2e], dϕᵃ = %.2e, dϕᵇ = %.2e, ϕᵃ - ϕ₀ = %.2e, ϕᵇ - ϕ₀ = %.2e", k, a.α, b.α, a.dϕ, b.dϕ, a.ϕ - f₀, b.ϕ - f₀)

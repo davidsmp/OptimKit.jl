@@ -40,7 +40,7 @@ function optimize(fg, x, alg::GradientDescent;
         _xlast[] = x # store result in global variables to debug linesearch failures
         _glast[] = g
         _dlast[] = η
-        x, f, g, ξ, α, nfg = alg.linesearch(fg, x, η, (f, g);
+        x, f, g, ξ, α, nfg,ls_succ = alg.linesearch(fg, x, η, (f, g);
             initialguess = α, retract = retract, inner = inner)
         numfg += nfg
         numiter += 1
@@ -51,7 +51,7 @@ function optimize(fg, x, alg::GradientDescent;
         push!(normgradhistory, normgrad)
 
         # check stopping criteria and print info
-        if normgrad <= alg.gradtol || numiter >= alg.maxiter
+        if normgrad <= alg.gradtol || numiter >= alg.maxiter || !ls_succ
             break
         end
         verbosity >= 2 &&
